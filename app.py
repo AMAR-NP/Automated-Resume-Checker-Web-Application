@@ -1,13 +1,3 @@
-import spacy
-import spacy.cli
-
-try:
-    nlp = spacy.load('en_core_web_sm')
-except OSError:
-    spacy.cli.download("en_core_web_sm")
-    nlp = spacy.load('en_core_web_sm')
-
-
 import re
 import pandas as pd
 from sentence_transformers import SentenceTransformer, util
@@ -56,7 +46,6 @@ class Evaluation(Base):
 Base.metadata.create_all(bind=engine)
 
 
-# Load embedding and feedback models once
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 feedback_generator = pipeline('text-generation', model='gpt2')
 
@@ -103,12 +92,10 @@ def extract_skills_rule_based(text):
 
 
 def extract_jd_sections(text):
-    role_title = None
-    must_have_skills = []
-    good_have_skills = []
-
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     role_title = lines[0] if lines else "Unknown Role"
+    must_have_skills = []
+    good_have_skills = []
 
     must_have_pattern = re.compile(r'(must[\s-]?have skills|required skills)', re.I)
     good_have_pattern = re.compile(r'(good[\s-]?to[\s-]?have skills|preferred skills)', re.I)
@@ -126,21 +113,21 @@ def extract_jd_sections(text):
             continue
 
         if current_section == 'must_have':
-            skills = [s.strip() for s in re.split(r'[,;•-]', line) if s.strip()]
-            must_have_skills.extend(skills)
+            must_have_skills.extend([s.strip() for s in re.split(r'[,;•-]', line) if s.strip()])
         elif current_section == 'good_have':
-            skills = [s.strip() for s in re.split(r'[,;•-]', line) if s.strip()]
-            good_have_skills.extend(skills)
+            good_have_skills.extend([s.strip() for s in re.split(r'[,;•-]', line) if s.strip()])
+
+    must_have_skills = list(set(must_have_skills))
+    good_have_skills = list(set(good_have_skills))
 
     return {
         'role_title': role_title,
-        'must_have_skills': list(set(must_have_skills)),
-        'good_have_skills': list(set(good_have_skills))
+        'must_have_skills': must_have_skills,
+        'good_have_skills': good_have_skills
     }
 
 
 def extract_location_from_resume(text):
-    import re
     lines = text.lower().split('\n')
     location = None
     keywords = ['location', 'address', 'city', 'place']
