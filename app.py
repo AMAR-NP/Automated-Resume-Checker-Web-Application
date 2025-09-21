@@ -26,6 +26,13 @@ class JobDescription(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     evaluations = relationship("Evaluation", back_populates="job_description")
 
+import spacy.cli
+try:
+    nlp = spacy.load('en_core_web_sm')
+except OSError:
+    spacy.cli.download("en_core_web_sm")
+    nlp = spacy.load('en_core_web_sm')
+
 class Evaluation(Base):
     __tablename__ = 'evaluations'
     id = Column(Integer, primary_key=True, index=True)
