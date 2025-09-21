@@ -7,3 +7,4 @@ rapidfuzz
 pdfplumber
 python-docx
 sqlalchemy
+huggingface_hub>=0.14.1
