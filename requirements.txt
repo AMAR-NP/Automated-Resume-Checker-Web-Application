@@ -1,4 +1,3 @@
-re
 spacy
 pandas
 sentence-transformers
@@ -6,5 +5,5 @@ transformers
 rapidfuzz
 streamlit
 pdfplumber
-docx
+python-docx
 sqlalchemy
