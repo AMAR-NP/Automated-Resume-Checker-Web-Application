@@ -1,12 +1,14 @@
+import spacy
 import spacy.cli
+
 try:
     nlp = spacy.load('en_core_web_sm')
 except OSError:
     spacy.cli.download("en_core_web_sm")
     nlp = spacy.load('en_core_web_sm')
 
+
 import re
-import spacy
 import pandas as pd
 from sentence_transformers import SentenceTransformer, util
 from transformers import pipeline
@@ -19,11 +21,13 @@ from sqlalchemy import create_engine, Column, Integer, String, Text, Float, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
+
 # Database setup
 DATABASE_URL = "sqlite:///evaluations.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
+
 
 class JobDescription(Base):
     __tablename__ = 'job_descriptions'
@@ -32,6 +36,7 @@ class JobDescription(Base):
     raw_text = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     evaluations = relationship("Evaluation", back_populates="job_description")
+
 
 class Evaluation(Base):
     __tablename__ = 'evaluations'
@@ -47,15 +52,18 @@ class Evaluation(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     job_description = relationship("JobDescription", back_populates="evaluations")
 
+
 Base.metadata.create_all(bind=engine)
 
-# Load NLP and embedding models once
-nlp = spacy.load('en_core_web_sm')
+
+# Load embedding and feedback models once
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 feedback_generator = pipeline('text-generation', model='gpt2')
 
+
 SKILLS_DB = ["python", "java", "c++", "sql", "machine learning", "data analysis",
              "project management", "communication", "excel", "aws", "docker", "tensorflow"]
+
 
 def extract_text_from_pdf_with_header_footer_removal(pdf_file):
     pages_text = []
@@ -81,15 +89,18 @@ def extract_text_from_pdf_with_header_footer_removal(pdf_file):
         clean_text.extend(lines)
     return '\n'.join(clean_text)
 
+
 def extract_text_from_docx(docx_file):
     doc = docx.Document(docx_file)
     full_text = [para.text for para in doc.paragraphs]
     return '\n'.join(full_text)
 
+
 def extract_skills_rule_based(text):
     text_lower = text.lower()
     skills_found = [skill for skill in SKILLS_DB if skill in text_lower]
     return skills_found
+
 
 def extract_jd_sections(text):
     role_title = None
@@ -127,6 +138,7 @@ def extract_jd_sections(text):
         'good_have_skills': list(set(good_have_skills))
     }
 
+
 def extract_location_from_resume(text):
     import re
     lines = text.lower().split('\n')
@@ -141,11 +153,13 @@ def extract_location_from_resume(text):
                     return location
     return "Unknown"
 
+
 def compute_semantic_similarity(text1, text2):
     emb1 = embedding_model.encode(text1, convert_to_tensor=True)
     emb2 = embedding_model.encode(text2, convert_to_tensor=True)
     cosine_score = util.pytorch_cos_sim(emb1, emb2).item()
     return cosine_score
+
 
 def fuzzy_skill_match(resume_skills, jd_skills, threshold=80):
     matched_skills = set()
@@ -158,11 +172,13 @@ def fuzzy_skill_match(resume_skills, jd_skills, threshold=80):
             matched_skills.add(match)
     return list(matched_skills)
 
+
 def generate_dynamic_feedback(job_desc, resume_text, missing_elements):
     prompt = f"""You are an expert career advisor. Given this job description: "{job_desc}" and this candidate resume summary: "{resume_text}", the candidate is missing the following important skills or projects: {missing_elements}. Provide constructive, personalized feedback on how the candidate can improve their resume to better fit the job."""
     response = feedback_generator(prompt, max_length=200, num_return_sequences=1)
     feedback = response[0]['generated_text'].replace(prompt, '').strip()
     return feedback
+
 
 def save_jd_to_db(role_title, raw_text):
     session = SessionLocal()
@@ -173,11 +189,13 @@ def save_jd_to_db(role_title, raw_text):
     session.close()
     return jd
 
+
 def get_all_jds():
     session = SessionLocal()
     jds = session.query(JobDescription).order_by(JobDescription.created_at.desc()).all()
     session.close()
     return jds
+
 
 def save_evaluation_db(data):
     session = SessionLocal()
@@ -198,11 +216,13 @@ def save_evaluation_db(data):
     finally:
         session.close()
 
+
 def get_evaluations_by_jd(job_id):
     session = SessionLocal()
     evaluations = session.query(Evaluation).filter(Evaluation.job_id == job_id).order_by(Evaluation.score.desc()).all()
     session.close()
     return evaluations
+
 
 def main():
     st.set_page_config(page_title="Placement Team Dashboard", layout="wide")
@@ -366,6 +386,7 @@ def main():
             file_name=f'shortlisted_resumes_{selected_role}.csv',
             mime='text/csv'
         )
+
 
 if __name__ == "__main__":
     main()
