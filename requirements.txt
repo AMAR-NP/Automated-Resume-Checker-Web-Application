@@ -1,0 +1,10 @@
+re
+spacy
+pandas
+sentence-transformers
+transformers
+rapidfuzz
+streamlit
+pdfplumber
+docx
+sqlalchemy
