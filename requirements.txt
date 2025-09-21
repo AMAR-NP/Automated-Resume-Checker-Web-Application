@@ -1,5 +1,6 @@
 streamlit
 spacy==3.5.3
+thinc==8.1.7
 en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0.tar.gz
 pandas>=1.3.0
 sentence-transformers==2.2.2
