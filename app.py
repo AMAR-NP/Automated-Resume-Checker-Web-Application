@@ -59,7 +59,6 @@ def extract_skills(text):
     return [skill for skill in SKILLS_DB if skill in text_lower]
 
 def extract_jd_sections(text):
-    # Simple: first non-empty line is title; rest skills by keyword
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     role_title = lines[0] if lines else "Unknown Role"
     must_have, good_have = [], []
@@ -112,34 +111,34 @@ def get_evaluations(session, job_id):
 # ===== STREAMLIT APP =====
 
 def main():
-    st.title("Simple Automated Resume Checker")
-
-st.markdown("""
-### How to Use This Application
-
-1. **Upload Job Description:**  
-   - Go to the **Job Descriptions** tab.  
-   - Upload a Job Description file in PDF or DOCX format.  
-   - Review the extracted role title and skills, then save the Job Description.
-
-2. **Check Resumes Against Job Description:**  
-   - Switch to the **Resume Checker** tab.  
-   - Select a previously saved Job Description from the dropdown.  
-   - Upload one or more candidate resumes in PDF or DOCX format.  
-   - Click the **Evaluate** button to see the suitability score and feedback.
-
-3. **View Shortlisted Candidates:**  
-   - Visit the **Shortlisted Resumes** tab.  
-   - Select a Job Description to view evaluated candidates with scores and feedback.  
-   - You can download the shortlisted candidates’ data as a CSV file.
-
----
-
-> **Note:**  
-> This app uses simple keyword matching and fuzzy matching techniques to evaluate resumes relative to job descriptions. It's recommended to upload clear job descriptions and resumes for best results.
-""")
     st.set_page_config(page_title="Simple Resume Checker", layout="wide")
+    
     st.title("Simple Automated Resume Checker")
+
+    st.markdown("""
+    ### How to Use This Application
+
+    1. **Upload Job Description:**  
+       - Go to the **Job Descriptions** tab.  
+       - Upload a Job Description file in PDF or DOCX format.  
+       - Review the extracted role title and skills, then save the Job Description.
+
+    2. **Check Resumes Against Job Description:**  
+       - Switch to the **Resume Checker** tab.  
+       - Select a previously saved Job Description from the dropdown.  
+       - Upload one or more candidate resumes in PDF or DOCX format.  
+       - Click the **Evaluate** button to see the suitability score and feedback.
+
+    3. **View Shortlisted Candidates:**  
+       - Visit the **Shortlisted Resumes** tab.  
+       - Select a Job Description to view evaluated candidates with scores and feedback.  
+       - You can download the shortlisted candidates’ data as a CSV file.
+
+    ---
+
+    > **Note:**  
+    > This app uses simple keyword and fuzzy matching techniques to evaluate resumes relative to job descriptions for quick feedback.
+    """)
 
     session = SessionLocal()
 
